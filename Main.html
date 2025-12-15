@@ -6,31 +6,49 @@
 
 <div id="map" style="width: 100%; height: 100%;">
     <script>
-        var map = L.map('map').setView([51.505, -0.09], 13);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+        // Layer groups for all the different components
+        const divertor = L.layerGroup();
+        const mLittleton = L.marker([39.61, -105.02]).bindPopup('This is Littleton, CO.').addTo(divertor);
+        const mDenver = L.marker([39.74, -104.99]).bindPopup('This is Denver, CO.').addTo(divertor);
+        const mAurora = L.marker([39.73, -104.8]).bindPopup('This is Aurora, CO.').addTo(divertor);
+        const mGolden = L.marker([39.77, -105.23]).bindPopup('This is Golden, CO.').addTo(divertor);
 
-        var polygon = L.polygon([
-            [51.509, -0.08],
-            [51.503, -0.06],
-            [51.51, -0.047]
-        ]).addTo(map);
+        const breedingBlanket = L.layerGroup();
+        const testMarker = L.marker([40, -105]).bindPopup('Helllooooo').addTo(breedingBlanket)
 
-        polygon.bindPopup("I am a polygon.");
+        const firstWall = L.layerGroup();
 
-        var popup = L.popup();
+        const heating = L.layerGroup();
 
-        function onMapClick(e) {
-            popup
-                .setLatLng(e.latlng)
-                .setContent("You clicked the map at " + e.latlng.toString())
-                .openOn(map);
-        }
+        const magnets = L.layerGroup();
+        
+        // The base map
+        const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	        maxZoom: 19,
+        	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
 
-        map.on('click', onMapClick);
+        // Main map component
+        const map = L.map('map', {
+	        center: [50, 15],
+	        zoom: 4,
+	        layers: [osm, ]
+        });
+
+        const baseMaps = {'OSM': map}
+
+        // Set of all overlays/components
+        const overlays = {
+	        'Divertor': divertor,
+            'Breeding blanket': breedingBlanket,
+            'First wall': firstWall,
+            'Heating': heating,
+            'Superconducting magnets': magnets
+        };
+
+        // Layer control to allow switching between layers
+        const layerControl = L.control.layers(baseMaps, overlays).addTo(map);
 
     </script>
 </div>
