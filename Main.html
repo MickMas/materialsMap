@@ -24,16 +24,80 @@
         var eindhoven = [51.449215, 5.487561];
 
         // Layer groups for all the different components
-        const divertor = L.layerGroup();
-        var tungstenArrow = L.polyline([[30, 110], eindhoven], {}).bindPopup('Wow thats a lot of tungsten!').addTo(divertor);
-        var arrowHead = L.polylineDecorator(tungstenArrow, {
-            patterns: [
-                {offset: '100%', repeat: 0, symbol: L.Symbol.arrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true}})}
-            ]
-        }).addTo(divertor);
+        const tungsten = L.layerGroup();
 
+        const tungstenResources = [
+            {country: "China", location: [35, 105], reserves: 2400000, production: 67000}, // China
+            {country: "Russia", location: [60, 100], reserves: 400000, production: 2000}, // Russia
+            {country: "Vietnam", location: [16, 108], reserves: 140000, production: 3400}, // Vietnam
+            {country: "Bolivia", location: [-16.5, -68.1], reserves: 1, production: 1600}, // Bolivia
+            {country: "Portugal", location: [39.5, -8], reserves: 3400, production: 500}, // Portugal
+            {country: "Australia", location: [-25, 135], reserves: 570000, production: 1000}, // Australia
+            {country: "Spain", location: [40, -4], reserves: 66000, production: 700}, // Spain
+        ];
 
+        tungstenResources.forEach(element => {
+            var innerRadius = Math.sqrt(element.production) * 500;
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'orange',
+                fillOpacity: 0.7,
+                radius: innerRadius
+            }).addTo(tungsten);
+            var radius = Math.sqrt(element.reserves) * 500; // Scale radius for better visibility
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                radius: radius
+            }).bindPopup( `Country: ${element.country}. Tungsten Reserves: ${element.reserves} tons. Tungsten production: ${element.production} tons/year. The ITER divertor is armoured by around ~300.000 tungsten tiles. The average in-warehouse Rotterdam benchmark price of tungsten already delivered and stored in Europe were about $258/mtu in 2023 and around $250/mtu in 2024.`).addTo(tungsten);
+        });
         
+        const copper = L.layerGroup();
+
+        const copperResources = [
+            {country: "Chile", location: [-33.5, -70.6], reserves: 190000000, production: 5300000}, // Chile
+            {country: "Australia", location: [-25, 135], reserves: 100000000, production: 800000}, // Australia
+            {country: "Peru", location: [-10, -76], reserves: 100000000, production: 2600000}, // Peru
+            {country: "Russia", location: [60, 100], reserves: 80000000, production: 930000}, // Russia
+            {country: "Congo (Kinshasa)", location: [-2.5, 20], reserves: 80000000, production: 3300000}, // Congo
+            {country: "China", location: [35, 105], reserves: 41000000, production: 1800000}, // China
+        ];
+
+        const inChinaCopperArrow = new Map();
+
+        copperResources.forEach(element => {
+            var innerRadius = Math.sqrt(element.production) * 100;
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'orange',
+                fillOpacity: 0.7,
+                radius: innerRadius
+            }).addTo(copper);
+            var radius = Math.sqrt(element.reserves) * 100; // Scale radius for better visibility
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                radius: radius
+            }).bindPopup( `Country: ${element.country}. Copper Reserves: ${element.reserves} tons. Copper production: ${element.production} tons/year. Prices currently sit around 9000-11000 US$/ton, having risen from 2023. Copper is not scarce but mines have long lead times and high demand, signifying the need for long contract times.`).addTo(copper);
+        
+            inChinaCopperArrow.set(element.country, L.polyline([element.location, [35, 105]], {color: 'black', weight: 1}).bindPopup('China currently imports about 60% of global copper ore produced.').addTo(copper));
+            L.polylineDecorator(inChinaCopperArrow.get(element.country), {
+                patterns: [
+                    {offset: '5%', repeat: 250, symbol: L.Symbol.arrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true}})}
+                ]
+            }).addTo(copper);
+        });
+
+        outChinaCopperArrow = L.polyline([[35, 105], eindhoven], {color: 'black'}).bindPopup('China produces >45% of all refined copper worldwide.').addTo(copper);
+        var outChinaCopperDecorator = L.polylineDecorator(outChinaCopperArrow, {
+            patterns: [
+                {offset: '5%', repeat: 250, symbol: L.Symbol.arrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true}})}
+            ]
+        }).addTo(copper);
+
+
         const breedingBlanket = L.layerGroup();
 
         var arcticLithiumArrow = L.polyline([[35, 105], [66.3, 191.6], [77.7, 55.2], [63, 0], eindhoven], {color: 'black'}).bindPopup('Going through the arctic. Currently this is rarely done but climate change may make it more common.').addTo(breedingBlanket);
@@ -107,17 +171,132 @@
             }).bindPopup( `Country: ${element.country}. Lithium Reserves: ${element.reserves} tons. Lithium production: ${element.production} tons/year. These are the total reserves, out of this only 7,5\% is the Li-6 needed for a breeding blanket. For a fleet of 100 reactors, 50 tons of Li-6 are required each year. Currently enrichment of Li-6 is the biggest issue as all current processes use highly toxic mercury.`).addTo(breedingBlanket);
         });
 
-        const firstWall = L.layerGroup();
+        const heatingMolybdenum = L.layerGroup();
 
-        const heating = L.layerGroup();
+        var chinaMolyArrow = L.polyline([[35, 105], eindhoven], {color: 'black'}).bindPopup('China dominates the market share with 42% of the global mine production being situated there. In 2025 China restricted its exports of molybdenum, directly showcasing an example of supply chain disruptions at the hand of one player.').addTo(heatingMolybdenum);
+        var chinaMolyDecorator = L.polylineDecorator(chinaMolyArrow, {
+            patterns: [
+                {offset: '5%', repeat: 250, symbol: L.Symbol.arrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true}})}
+            ]
+        }).addTo(heatingMolybdenum);
 
-        const magnets = L.layerGroup();
+        const molybdenumResources = [
+            {country: "US", location: [38, -97], reserves: 3500000, production: 33000}, // US
+            {country: "China", location: [35, 105], reserves: 5900000, production: 110000}, // China
+            {country: "Chile", location: [-33.5, -70.6], reserves: 1400000, production: 38000}, // Chile
+            {country: "Peru", location: [-10, -76], reserves: 1900000, production: 41000}, // Peru
+            {country: "Mexico", location: [20, -99], reserves: 130000, production: 17000}, // Mexico
+    ];
+        molybdenumResources.forEach(element => {
+            var innerRadius = Math.sqrt(element.production) * 500;
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'orange',
+                fillOpacity: 0.7,
+                radius: innerRadius
+            }).addTo(heatingMolybdenum);
+            var radius = Math.sqrt(element.reserves) * 500; // Scale radius for better visibility
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                radius: radius
+            }).bindPopup( `Country: ${element.country}. Molybdenum Reserves: ${element.reserves} tons. Molybdenum production: ${element.production} tons/year. Per commercial fusion reactor, about 15 kg/year is needed. Current prices are at 40-50 €/kg. Europe currently has no production of Molybdenum. A memorandum to start a mine in Greenland has been signed.`).addTo(heatingMolybdenum);
+        });
+
+        const heatingDiamonds = L.layerGroup();
+
+        const diamondsResources = [
+            {country: "Russia", location: [65, 80], reserves: 990, production: 16}, // Russia
+            {country: "Botswana", location: [-22, 24], reserves: 250, production: 8}, // Botswana
+            {country: "Angola", location: [-12, 18], reserves: 150, production: 1}, // Angola
+            {country: "Congo (Kinshasa)", location: [-2.5, 20], reserves: 150, production: 7}, // Australia
+    ];
+        diamondsResources.forEach(element => {
+            var innerRadius = Math.sqrt(element.production) * 10000;
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'orange',
+                fillOpacity: 0.7,
+                radius: innerRadius
+            }).addTo(heatingDiamonds);
+            var radius = Math.sqrt(element.reserves) * 10000; // Scale radius for better visibility
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                radius: radius
+            }).bindPopup(`Country: ${element.country}. Diamond Reserves: ${element.reserves} million carats. Diamond production: ${element.production} million carats/year. Per commercial fusion reactor, about 0.03 kg/year is needed. Current prices are at 1000 €/kg. The long lead times and low amount of qualified workers with gyrotron windows means that price fluctuation or a longer replacement time will deeply impact the costs related to the upkeep of this system.`).addTo(heatingDiamonds);
+        });
+
+        const heatingGraphite = L.layerGroup();
+
+        const graphiteResources = [
+            {country: "China", location: [35, 105], reserves: 81000000, production: 1270000}, // China
+            {country: "Mozambique", location: [-20, 34], reserves: 25000000, production: 75000}, // Mozambique
+            {country: "Madagascar", location: [-20, 46.5], reserves: 27000000, production: 89000}, // Madagascar
+            {country: "Brazil", location: [-16, -48], reserves: 74000000, production: 68000}, // Brazil
+            {country: "Norway", location: [61, 8], reserves: 600000, production: 7000}, // Norway
+        ];
+
+        graphiteResources.forEach(element => {
+            var innerRadius = Math.sqrt(element.production) * 150;
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'orange',
+                fillOpacity: 0.7,
+                radius: innerRadius
+            }).addTo(heatingGraphite);
+            var radius = Math.sqrt(element.reserves) * 150; // Scale radius for better visibility
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                radius: radius
+            }).bindPopup( `Country: ${element.country}. Graphite Reserves: ${element.reserves} tons. Graphite production: ${element.production} tons/year. Per commercial fusion reactor, about 300 kg/year is needed. Current prices range from 0.6 to 1.8 €/kg. 79% of global mine production is concentrated in China. 0.04% of global mine production is in the EU, while 0.4% is in Norway.`).addTo(heatingGraphite);
+        });
+        
+        const tritium = L.layerGroup();
+
+        const tritiumReactors = [
+        {country: "Argentina", location: [-34.6, -58.4], reactorsLow:3, reactorsHigh: 3}, // Argentina
+        {country: "Canada", location: [56, -106], reactorsLow: 17, reactorsHigh: 22}, // Canada
+        {country: "India", location: [25, 77], reactorsLow: 12, reactorsHigh: 17}, // India
+        {country: "South Korea", location: [36, 128], reactorsLow: 1, reactorsHigh: 1}, // South Korea
+        {country: "Pakistan", location: [30, 69], reactorsLow: 1, reactorsHigh: 1}, // Pakistan
+        {country: "Romania", location: [45, 25], reactorsLow: 2, reactorsHigh: 5}, // Romania
+        ];
+
+        tritiumReactors.forEach(element => {
+            var innerRadius = element.reactorsLow * 30000;
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.7,
+                radius: innerRadius
+            }).addTo(tritium);
+            var radius = element.reactorsHigh * 30000; // Scale radius for better visibility
+            L.circle(element.location, {
+                color: 'transparent',
+                fillColor: 'blue',
+                fillOpacity: 0.5,
+                radius: radius
+            }).bindPopup( `Country: ${element.country}. Current heavy water fission reactors: ${element.reactorsLow}-${element.reactorsHigh}. Each heavy water fission reactor can produce up to 0.13 kg of tritium per year using the CANDU method. A commercial fusion reactor will need anywhere from 8-50 kg of Tritium to power up or restart.`).addTo(tritium);
+        });
+
+        L.circle([35.601337, -84.790335], {
+                color: 'transparent',
+                fillColor: 'orange',
+                fillOpacity: 0.7,
+                radius: 30000
+            }
+        ).bindPopup("Watts Bar and Sequoyah nuclear power plant, currently the only fission power plant in the world producing tritium in the same way as the US did during the cold war. Still in use by, among others, the US Department of Energy to maintain the American nuclear arsenal. It is highly unlikely that any foreign power will get tritium from this plant.").addTo(tritium);
 
 
         // Main map component
         var map = L.map('map', {
 	        center: [50, 15],
-	        zoom: 4,
+	        zoom: 3,
 	        layers: [L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	        maxZoom: 19,
             minZoom: 2,
@@ -128,13 +307,14 @@
 
         // Set of all overlays/components
         const overlays = {
-	        'Divertor': divertor,
-            'Breeding blanket': breedingBlanket,
-            'First wall': firstWall,
-            'Heating': heating,
-            'Superconducting magnets': magnets
+	        'Tungsten': tungsten,
+            'Copper': copper,
+            'Lithium - Breeding blanket': breedingBlanket,
+            'Heating - Molybdenum': heatingMolybdenum,
+            'Heating - Diamonds': heatingDiamonds,
+            'Heating - Graphite': heatingGraphite,
+            'Tritium': tritium
         };
-        divertor.addTo(map);
 
 
         // Layer control to allow switching between layers
